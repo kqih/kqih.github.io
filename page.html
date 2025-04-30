@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Morse Code Trainer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Custom Dropdown Styling */
+    .custom-dropdown {
+      position: relative;
+      width: 250px;
+      margin: 0.5rem;
+    }
+
+    .custom-dropdown select {
+      display: none;
+    }
+
+    .custom-dropdown-button {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background-color: #2c5364;
+      background-image: linear-gradient(45deg, #2c5364, #00c6ff);
+      color: white;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    .custom-dropdown-button:hover {
+      background-image: linear-gradient(45deg, #00c6ff, #2c5364);
+    }
+
+    .custom-dropdown-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background-color: #203a43;
+      border-radius: 12px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4);
+      display: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .custom-dropdown-list a {
+      padding: 0.75rem;
+      color: white;
+      text-decoration: none;
+      font-size: 1.2rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .custom-dropdown-list a:hover {
+      background-color: #00c6ff;
+    }
+
+    .custom-dropdown.active .custom-dropdown-list {
+      display: block;
+      opacity: 1;
+    }
+
+    .custom-dropdown.active .custom-dropdown-button {
+      background-color: #00c6ff;
+      background-image: linear-gradient(45deg, #00c6ff, #2c5364);
+    }
+
+    select, input, button {
+      font-size: 1.2rem;
+      padding: 0.75rem 1.5rem;
+      margin: 0.5rem;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #00c6ff;
+      background-image: linear-gradient(45deg, #00c6ff, #0072ff);
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-image: linear-gradient(45deg, #0072ff, #00c6ff);
+    }
+
+    #game, #start-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #game.active, #start-screen.active {
+      display: flex;
+    }
+
+    .fade-in {
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #score, #high-score {
+      font-size: 1.4rem;
+      margin-top: 10px;
+      color: #00ffe7;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    }
+
+    #hint-btn {
+      background-color: #ff9900;
+      background-image: linear-gradient(45deg, #ff9900, #ff6600);
+    }
+
+    #hint-btn:hover {
+      background-image: linear-gradient(45deg, #ff6600, #ff9900);
+    }
+
+    #guess {
+      font-size: 1.5rem;
+      padding: 0.75rem;
+      width: 300px;
+      border-radius: 10px;
+      border: 2px solid #fff;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      margin-bottom: 1rem;
+    }
+
+    #guess:focus {
+      border-color: #00c6ff;
+      outline: none;
+    }
+
+    #game-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    #play-again-btn, #try-again-btn {
+      font-size: 1.1rem;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      background-color: #ff4b5c;
+      background-image: linear-gradient(45deg, #ff4b5c, #ff1e3d);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #play-again-btn:hover, #try-again-btn:hover {
+      background-image: linear-gradient(45deg, #ff1e3d, #ff4b5c);
+    }
+
+    #morse {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+    }
+
+    .hint-text {
+      font-size: 1.1rem;
+      color: #ffcc00;
+      margin-top: 10px;
+    }
+
+    #high-score-guess, #high-score-input {
+      font-size: 1.2rem;
+      margin-top: 20px;
+      color: #ff0;
+    }
+  </style>
+</head>
+<body>
+  <div id="start-screen" class="active fade-in">
+    <h1>Morse Code Trainer</h1>
+    
+    <div class="custom-dropdown" id="difficulty-dropdown">
+      <div class="custom-dropdown-button" onclick="toggleDropdown('difficulty-dropdown')">
+        <span>Select Difficulty</span>
+        <span>&#x25BC;</span>
+      </div>
+      <div class="custom-dropdown-list">
+        <a href="#" onclick="setDifficulty('easy')">Easy</a>
+        <a href="#" onclick="setDifficulty('medium')">Medium</a>
+        <a href="#" onclick="setDifficulty('hard')">Hard</a>
+      </div>
+    </div>
+
+    <div class="custom-dropdown" id="mode-dropdown">
+      <div class="custom-dropdown-button" onclick="toggleDropdown('mode-dropdown')">
+        <span>Select Mode</span>
+        <span>&#x25BC;</span>
+      </div>
+      <div class="custom-dropdown-list">
+        <a href="#" onclick="setMode('guess')">Guess the Word</a>
+        <a href="#" onclick="setMode('morse-input')">Morse Code Input</a>
+      </div>
+    </div>
+
+    <br>
+    <button onclick="startGame()">Start Game</button>
+    <p id="high-score-guess">High Score (Guess Word): 0</p>
+    <p id="high-score-input">High Score (Morse Input): 0</p>
+  </div>
+
+  <div id="game" class="fade-in">
+    <h2 id="morse">📡 ---</h2>
+    <input type="text" id="guess" placeholder="Enter your guess" />
+    <div id="game-buttons">
+      <button id="submit-btn">Submit</button>
+      <button id="play-again-btn">🔁 Play Again</button>
+      <button id="hint-btn">💡 Hint</button>
+    </div>
+    <p id="result"></p>
+    <p id="score">Points: 0</p>
+    <button id="try-again-btn" style="display:none;" onclick="startGame()">Try Again</button>
+    <p class="hint-text" id="hint-text"></p>
+  </div>
+
+  <script>
+    const DOT_DURATION = 100;
+    const DASH_DURATION = DOT_DURATION * 3;
+    const LETTER_PAUSE = DOT_DURATION * 3 / 1000;
+
+    const MORSE_CODE_DICT = {
+      'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..',
+      'E': '.',  'F': '..-.', 'G': '--.',  'H': '....',
+      'I': '..', 'J': '.---', 'K': '-.-',  'L': '.-..',
+      'M': '--', 'N': '-.',   'O': '---',  'P': '.--.',
+      'Q': '--.-','R': '.-.', 'S': '...',  'T': '-',
+      'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+      'Y': '-.--','Z': '--..',
+      '0': '-----', '1': '.----', '2': '..---',
+      '3': '...--','4': '....-', '5': '.....',
+      '6': '-....','7': '--...','8': '---..','9': '----.'
+    };
+
+    let wordList = [];
+    let currentWord = '';
+    let currentMorse = '';
+    let currentHint = '';
+    let score = 0;
+    let difficulty = 'easy';
+    let mode = 'guess';
+    let highScoreGuess = localStorage.getItem('highScoreGuess') || 0;
+    let highScoreInput = localStorage.getItem('highScoreInput') || 0;
+
+    function toggleDropdown(id) {
+      document.getElementById(id).classList.toggle('active');
+    }
+
+    function setDifficulty(level) {
+      difficulty = level;
+      alert(`Difficulty set to ${difficulty}`);
+    }
+
+    function setMode(newMode) {
+      mode = newMode;
+      alert(`Mode set to ${mode}`);
+    }
+
+    function fetchWords() {
+      // Sample words
+      wordList = ['apple', 'banana', 'cherry', 'date'];
+    }
+
+    function textToMorse(text) {
+      return text.toUpperCase().split('').map(char => MORSE_CODE_DICT[char] || ' ').join(' ');
+    }
+
+    function startGame() {
+      score = 0;
+      document.getElementById('score').innerText = `Points: ${score}`;
+      document.getElementById('hint-text').innerText = '';
+      document.getElementById('result').innerText = '';
+      document.getElementById('try-again-btn').style.display = 'none';
+
+      fetchWords().then(() => {
+        nextWord();
+      });
+    }
+
+    function nextWord() {
+      const word = wordList[Math.floor(Math.random() * wordList.length)];
+      currentWord = word;
+      currentMorse = textToMorse(word);
+      currentHint = word[0];
+
+      document.getElementById('morse').innerText = currentMorse;
+      document.getElementById('guess').value = '';
+    }
+
+    function checkGuess() {
+      const guess = document.getElementById('guess').value.trim().toLowerCase();
+      if (guess === currentWord) {
+        score += 10;
+        document.getElementById('result').innerText = "✅ Correct!";
+        nextWord();
+      } else {
+        document.getElementById('result').innerText = "❌ Incorrect!";
+        document.getElementById('try-again-btn').style.display = 'block';
+      }
+
+      document.getElementById('score').innerText = `Points: ${score}`;
+      if (mode === 'guess') {
+        if (score > highScoreGuess) {
+          highScoreGuess = score;
+          localStorage.setItem('highScoreGuess', score);
+          document.getElementById('high-score-guess').innerText = `High Score (Guess Word): ${score}`;
+        }
+      }
+    }
+
+    function saveScore() {
+      if (mode === 'guess' && score > highScoreGuess) {
+        highScoreGuess = score;
+        localStorage.setItem('highScoreGuess', score);
+      } else if (mode === 'morse-input' && score > highScoreInput) {
+        highScoreInput = score;
+        localStorage.setItem('highScoreInput', score);
+      }
+    }
+
+    document.getElementById('submit-btn').addEventListener('click', checkGuess);
+    document.getElementById('hint-btn').addEventListener('click', () => alert(`Hint: The word starts with "${currentHint}"`));
+    document.getElementById('play-again-btn').addEventListener('click', playCurrentMorse);
+    document.getElementById('try-again-btn').addEventListener('click', startGame);
+  </script>
+</body>
+</html>
